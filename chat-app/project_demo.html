@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PQ-Adaptive Ratcheting Chat Demo</title>
+  <style>
+    :root {
+      --ink: #10212b;
+      --muted: #4a6270;
+      --line: #d7e1e8;
+      --paper: #f7fafc;
+      --accent: #0f766e;
+      --accent-2: #1d4ed8;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background: white;
+      line-height: 1.45;
+    }
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 14mm 14mm 16mm;
+      background: white;
+    }
+    h1, h2, h3 { margin: 0 0 8px; line-height: 1.15; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 17px; margin-top: 16px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+    h3 { font-size: 13px; margin-top: 12px; }
+    p { margin: 6px 0; font-size: 11.2px; }
+    ul, ol { margin: 6px 0 6px 18px; padding: 0; }
+    li { margin: 4px 0; font-size: 11.1px; }
+    .hero {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, #f3fbfa 0%, #f8fbff 55%, #eef5ff 100%);
+      padding: 14px 16px;
+      border-radius: 12px;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: var(--paper);
+    }
+    .k {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .v {
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .pill-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .pill {
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 10px;
+      color: white;
+      font-weight: bold;
+    }
+    .init { background: #475569; }
+    .classical { background: #166534; }
+    .pq { background: #1d4ed8; }
+    .warn { color: var(--warn); font-weight: bold; }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 14px;
+      align-items: start;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 10.6px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 6px 7px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: #f1f7fb; }
+    .flow {
+      border-left: 3px solid var(--accent);
+      padding-left: 10px;
+      margin: 8px 0;
+    }
+    .footer {
+      margin-top: 16px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      font-size: 9.5px;
+      color: var(--muted);
+    }
+    .mono { font-family: "Consolas", "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>PQ-Adaptive Ratcheting for TreeKEM-Based Secure Group Chat</h1>
+      <p class="sub">Single-file demo summary for guide / reviewer / project presentation</p>
+      <div class="pill-row">
+        <span class="pill init">Init</span>
+        <span class="pill classical">Classical Heal</span>
+        <span class="pill pq">PQ Batch Heal</span>
+      </div>
+      <p>This project implements a hybrid post-quantum real-time chat application with direct secure messaging, TreeKEM-style secure group state, adaptive healing, and a paper-facing metrics panel. The current novelty direction is <strong>PQ-Adaptive Ratcheting</strong>: PQ remains part of the group-security baseline, while the scheduler controls when lightweight healing or stronger batched PQ refreshes should occur.</p>
+    </div>
+
+    <h2>1. Implemented System</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="k">Frontend</div>
+        <div class="v">React + Vite + WebCrypto</div>
+        <p>Browser-based chat UI, secure group controls, mode badges, metrics panel, and local cryptographic state handling.</p>
+      </div>
+      <div class="card">
+        <div class="k">Backend</div>
+        <div class="v">Node.js + Express + Socket.IO</div>
+        <p>Authenticated realtime delivery, message persistence, group membership validation, and secure event routing.</p>
+      </div>
+      <div class="card">
+        <div class="k">Database</div>
+        <div class="v">MongoDB</div>
+        <p>Stores users, direct/group messages, groups, epochs, and control-message history needed for recovery.</p>
+      </div>
+    </div>
+
+    <h2>2. Cryptographic Design</h2>
+    <div class="two-col">
+      <div>
+        <h3>Direct Chat</h3>
+        <ul>
+          <li>Authentication with Dilithium / ML-DSA signatures on the handshake transcript.</li>
+          <li>Hybrid key establishment using ECDH + Kyber / ML-KEM.</li>
+          <li>Session key derivation with HKDF and AES-256-GCM for message/file encryption.</li>
+          <li>Forward ratchet with per-message key evolution and replay controls.</li>
+        </ul>
+
+        <h3>Group Chat</h3>
+        <ul>
+          <li>TreeKEM-style group state with epochs, direct path, and copath metadata.</li>
+          <li>Baseline hybrid wrapping for group root-key distribution using ECDH + Kyber when available.</li>
+          <li>Sender-specific ratchets derived from the current epoch root key.</li>
+          <li>AES-GCM with authenticated metadata binding group ID, epoch, membership version, sender ID, and message index.</li>
+        </ul>
+      </div>
+      <div>
+        <table>
+          <tr>
+            <th>Mode</th>
+            <th>Meaning</th>
+          </tr>
+          <tr>
+            <td><strong>Init</strong></td>
+            <td>Initial group setup with baseline hybrid recipient wrapping and epoch 1 state creation.</td>
+          </tr>
+          <tr>
+            <td><strong>Classical Heal</strong></td>
+            <td>Lightweight scheduled healing mode with lower-cost refresh behavior while retaining PQ baseline wrapping.</td>
+          </tr>
+          <tr>
+            <td><strong>PQ Batch Heal</strong></td>
+            <td>Stronger adaptive recovery mode with explicit subgroup batching semantics and hybrid ECDH + Kyber recipient wrapping.</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <h2>3. Novelty Direction</h2>
+    <p>The project does not treat PQ as an optional add-on. Instead, PQ is part of the <strong>baseline secure group key-distribution path</strong>, while adaptive ratcheting controls <strong>how often</strong> and <strong>how aggressively</strong> stronger healing should occur. This supports a research claim centered on balancing post-quantum security, bandwidth overhead, and healing frequency.</p>
+    <div class="flow">
+      <p><strong>Design principle:</strong> “Do not switch PQ security on and off. Keep PQ in the baseline, then adapt the recovery schedule and batching intensity.”</p>
+    </div>
+
+    <h2>4. Adaptive Scheduler</h2>
+    <ul>
+      <li>Tracks group traffic since last heal and since last PQ heal.</li>
+      <li>Escalates from <span class="mono">NO_HEAL</span> to <span class="mono">TREE_HEAL_CLASSICAL</span> on lighter thresholds.</li>
+      <li>Escalates to <span class="mono">TREE_HEAL_PQ_BATCH</span> for larger traffic windows, periodic PQ refresh windows, membership changes, or suspected compromise.</li>
+      <li>Preserves manual reviewer controls using the visible <strong>C</strong> and <strong>PQ</strong> buttons.</li>
+    </ul>
+
+    <h2>5. PQ Batch / mKyber-Style Semantics</h2>
+    <ul>
+      <li>PQ Batch builds explicit subgroup batch metadata instead of sending a single undifferentiated PQ label.</li>
+      <li>Each recipient is mapped to a <span class="mono">batchId</span>.</li>
+      <li>Control payload carries batch plan, batch count, recipient-to-batch mapping, and TreeKEM path-coverage metadata.</li>
+      <li>Recipient unwrap uses hybrid ECDH + Kyber secret derivation, while the payload structure reflects batched healing semantics.</li>
+    </ul>
+
+    <h2>6. PCS-Oriented Recovery</h2>
+    <ul>
+      <li>Membership changes are treated as security-relevant events and feed the scheduler.</li>
+      <li>Suspicious decryption failures can mark the group for stronger PQ recovery.</li>
+      <li>Admin-side open-group state can automatically push a PQ recovery epoch when these signals are triggered.</li>
+    </ul>
+
+    <h2>7. UI Demonstration Points</h2>
+    <table>
+      <tr>
+        <th>Visible Element</th>
+        <th>Reviewer Meaning</th>
+      </tr>
+      <tr>
+        <td>Mode badge</td>
+        <td>Shows whether the group is in Init, Classical, or PQ Batch mode.</td>
+      </tr>
+      <tr>
+        <td>Epoch label</td>
+        <td>Shows secure group-state advancement after healing events.</td>
+      </tr>
+      <tr>
+        <td>Metrics panel</td>
+        <td>Shows heal counts, batch counts, approximate payload size, last wrap mode, and crypto timing averages.</td>
+      </tr>
+      <tr>
+        <td>C / PQ buttons</td>
+        <td>Manual demonstration controls for lightweight and stronger healing paths.</td>
+      </tr>
+    </table>
+
+    <h2>8. Recommended Demo Sequence</h2>
+    <ol>
+      <li>Log in as two users and show successful direct encrypted chat.</li>
+      <li>Create a new secure group and show <strong>Mode: Init</strong>, <strong>Epoch 1</strong>.</li>
+      <li>Send several short group messages to trigger the adaptive scheduler.</li>
+      <li>Show transition to <strong>Classical</strong>, then later to <strong>PQ Batch</strong>.</li>
+      <li>Click <strong>PQ</strong> manually and show the status text mentioning hybrid ECDH + Kyber wrapping and batching.</li>
+      <li>Show the metrics panel updating: heals, batches, payload bytes, and encrypt/decrypt timing averages.</li>
+      <li>Refresh both clients and reopen the group to demonstrate history recovery still works.</li>
+      <li>Optionally remove a member and show the PCS-style PQ recovery trigger.</li>
+    </ol>
+
+    <h2>9. Current Completion Summary</h2>
+    <p><strong>Implementation status:</strong> strong prototype / submission-ready demo state.</p>
+    <ul>
+      <li>Working secure direct chat with hybrid PQ handshake.</li>
+      <li>Working TreeKEM-style group system with adaptive healing and visible UI state.</li>
+      <li>Baseline PQ group wrapping plus stronger PQ Batch healing semantics.</li>
+      <li>Reviewer-friendly metrics panel for final demonstrations.</li>
+    </ul>
+
+    <p class="warn">Important honesty note:</p>
+    <p>This implementation now demonstrates the intended novelty direction clearly, but it remains a research prototype rather than a formally verified production protocol. The paper claim should emphasize adaptive PQ-secure healing and batched TreeKEM-oriented recovery, not absolute cryptographic finality.</p>
+
+    <div class="footer">
+      Prepared from the implemented project state in <span class="mono">C:\Users\ponug\OneDrive\Desktop\SDP\chat-app</span>.
+    </div>
+  </div>
+</body>
+</html>

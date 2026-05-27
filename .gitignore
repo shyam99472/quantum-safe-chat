@@ -1,0 +1,28 @@
+# Environment Variables (VERY IMPORTANT)
+.env
+backend/.env
+frontend/.env
+
+# Node Modules
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Build Files
+dist/
+frontend/dist/
+frontend/dev-dist/
+
+# Logs
+logs/
+*.log
+
+# Browser Profiles
+.chrome-pdf-profile/
+.edge-pdf-profile/
+
+# Uploaded Files
+backend/uploads/
+
+# VS Code Settings
+.vscode/
